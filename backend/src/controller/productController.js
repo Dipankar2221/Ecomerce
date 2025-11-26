@@ -1,5 +1,5 @@
 import Product from "../models/productModel.js";
-import { uploadImage } from "../utils/imagekit.js";
+import { imagekit, uploadImage } from "../utils/imagekit.js";
 
 import multer from "multer";
 
@@ -28,7 +28,12 @@ export const createProducts = async (req, res) => {
     let imagesArray = [];
 
     for (const file of req.files) {
-      const uploaded = await uploadImage(file, "Ecommerce/products");
+      const uploaded = await imagekit.upload({
+  file: file.buffer.toString("base64"),
+  fileName: `product_${Date.now()}.jpg`,
+  folder: "Eccomerce/products",   // 🔥 SAME AS CREATE
+});
+
 
       imagesArray.push({
         public_id: uploaded.fileId,
@@ -118,47 +123,118 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
+export const updateProduct = async (req, res) => {
+  try {
+    let product = await Product.findById(req.params.id);
 
-// update product
-
-export const updateProduct = async(req,res)=>{
-    const product=await Product.findByIdAndUpdate(req.params.id,req.body,{
-        new:true,
-        runValidators:true
-    })
-
-    if(!product){
-        return res.status(500).json({
-            success:false,
-            message:"Product not found"
-        })
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
+    let images = [];
+
+    // ----------------------------------------------------
+    // ✔ If NEW images uploaded
+    // ----------------------------------------------------
+    if (req.files && req.files.length > 0) {
+
+      // ❌ delete old images from ImageKit
+      for (let img of product.image) {
+        if (img.public_id) {
+          await imagekit.deleteFile(img.public_id);
+        }
+      }
+
+      // ✔ upload new images
+      for (const file of req.files) {
+        const uploaded = await imagekit.upload({
+          file: file.buffer.toString("base64"),
+          fileName: `product_${Date.now()}.jpg`,
+          folder: "/Eccomerce/products",
+        });
+
+        images.push({
+          public_id: uploaded.fileId,
+          url: uploaded.url,
+        });
+      }
+    } else {
+      // ----------------------------------------------------
+      // ✔ No new images — keep old images
+      // ----------------------------------------------------
+      images = product.image;
+    }
+
+    // ----------------------------------------------------
+    // ✔ Update the product
+    // ----------------------------------------------------
+    const updatedData = {
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      category: req.body.category,
+      stock: req.body.stock,
+      image: images, // always valid [{public_id,url}]
+    };
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      updatedData,
+      { new: true, runValidators: true }
+    );
+
     res.status(200).json({
-        success:true,
-        product
-    })
-}
+      success: true,
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
+
+  } catch (error) {
+    console.error("Update Product Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 
 //Delete Product
 
-export const deleteProduct = async(req,res)=>{
+export const deleteProduct = async (req, res) => {
+  try {
+    // 1️⃣ Find product first
+    const product = await Product.findById(req.params.id);
 
-   const product=await Product.findByIdAndDelete(req.params.id);
-
-        if(!product){
-        return res.status(500).json({
-            success:false,
-            message:"Product not found"
-        })
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
-    res.status(200).json({
-        success:true,
-        message:"Product deleted succesfully"
-    })
-}
+    // 2️⃣ Delete images from ImageKit
+    if (product.image && product.image.length > 0) {
+      for (let img of product.image) {
+        if (img.public_id) {
+          await imagekit.deleteFile(img.public_id);
+        }
+      }
+    }
+
+    // 3️⃣ Now delete product from DB
+    await product.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 
 
 //accesing single product

@@ -45,10 +45,10 @@ const Dashboard = () => {
       value: "product/create",
       icon: <PlusCircle size={20} />,
     },
-    { title: "All Users", value: "all-users", icon: <Users size={20} /> },
+    { title: "All Users", value: "getUser", icon: <Users size={20} /> },
     {
       title: "All Orders",
-      value: "all-orders",
+      value: "orders",
       icon: <ClipboardList size={20} />,
     },
     {

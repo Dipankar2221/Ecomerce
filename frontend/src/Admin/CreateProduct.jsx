@@ -75,9 +75,9 @@ const CreateProduct = () => {
       toast.success("Product Created Successfully!");
 
       dispatch(removeSuccess());
+
+      navigate('/admin/products')
       
-      // Optional redirect after creation
-      navigate("/admin/products");
     }
   }, [error, success, dispatch, navigate]);
 

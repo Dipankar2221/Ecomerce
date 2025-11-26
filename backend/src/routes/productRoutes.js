@@ -11,7 +11,9 @@ router.route("/admin/products").get(isAuthenticatedUser,roleBasedAccess("admin")
 
 router.route("/admin/product/create").post(isAuthenticatedUser,roleBasedAccess("admin"),uploadProductImages,createProducts);
 
-router.route("/admin/product/:id").put(isAuthenticatedUser,roleBasedAccess("admin"),updateProduct).delete(isAuthenticatedUser,roleBasedAccess("admin"),deleteProduct)
+router.route("/admin/product/update/:id").put(isAuthenticatedUser,roleBasedAccess("admin"),uploadProductImages,updateProduct);
+
+router.route("/admin/product/delete/:id").delete(isAuthenticatedUser,roleBasedAccess("admin"),deleteProduct);
 
 router.get("/product/:id",getSingleProduct);
 

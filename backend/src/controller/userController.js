@@ -6,7 +6,7 @@ import crypto from "crypto";
 
 import { sendEmail } from "../utils/sendEmail.js";
 
-import { uploadImage } from "../utils/imagekit.js";
+import { imagekit, uploadImage } from "../utils/imagekit.js";
 import multer from "multer";
 
 
@@ -156,6 +156,15 @@ export const loginUser = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     const newUserData = {
       name: req.body.name,
       email: req.body.email,
@@ -163,6 +172,10 @@ export const updateProfile = async (req, res) => {
 
     // ✅ If a new avatar is uploaded
     if (req.file) {
+      // if (user.avatar && user.avatar.public_id) {
+      //   await imagekit.deleteFile(user.avatar.public_id);
+      // }
+
       const uploadResponse = await uploadImage(req.file); // this should return { fileId, url }
 
       newUserData.avatar = {
@@ -172,7 +185,7 @@ export const updateProfile = async (req, res) => {
     }
 
     // ✅ Update user
-    const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+   const updateUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
       new: true,
       runValidators: true,
       useFindAndModify: false,
@@ -180,7 +193,7 @@ export const updateProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user,
+      user:updateUser,
     });
   } catch (error) {
     console.error("Profile update error:", error);
@@ -442,46 +455,75 @@ export const getSingleUser = async(req,res)=>{
   })
 }
 
-export const updateUserRole = async(req,res)=>{
-    const {role} = req.body;
+export const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
 
-    const newUserData={
-      role
-    }
-    const user = await User.findByIdAndUpdate(req.params.id,newUserData,{
-      new:true,
-      runValidators:true
-    })
+    const newUserData = { role };
 
-    if(!user){
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      newUserData,
+      {
+        new: true,
+        runValidators: true
+      }
+    ).select("name email role"); // return name & email
+
+    if (!user) {
       return res.status(400).json({
-        success:false,
-        message:"user id doesn't matched"
-      })
+        success: false,
+        message: "User ID doesn't match",
+      });
     }
 
     res.status(200).json({
-      success:true,
-      user
-    })
-}
+      success: true,
+      user,
+    });
 
-export const deleteUser = async(req,res)=>{
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
+export const deleteUser = async (req, res) => {
+  try {
     const user = await User.findById(req.params.id);
 
-    if(!user){
+    if (!user) {
       return res.status(400).json({
-        success:false,
-        message:"User doesn't exist"
-      })
+        success: false,
+        message: "User doesn't exist",
+      });
     }
 
+       // 🗑 Delete avatar if exists
+    if (user.avatar && user.avatar.public_id) {
+      await imagekit.deleteFile(user.avatar.public_id);
+    }
+
+    // Delete user from DB
     await User.findByIdAndDelete(req.params.id);
+
     res.status(200).json({
-      success:true,
-      message:"User successfully deleted"
-    })
-}
+      success: true,
+      message: "User deleted successfully",
+    });
+
+  } catch (error) {
+    console.error("Delete User Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 
 

@@ -25,6 +25,11 @@ import OrderDetails from "./order/OrderDetails";
 import Dashboard from "./Admin/Dashboard";
 import ProductList from "./Admin/ProductList";
 import CreateProduct from "./Admin/CreateProduct";
+import UpdateProduct from "./Admin/UpdateProduct";
+import UserList from "./Admin/UserList";
+import UpdateRole from "./Admin/UpdateRole";
+import OrdersList from "./Admin/OrdersList";
+import UpdateOrder from "./Admin/UpdateOrder";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -114,6 +119,26 @@ const App = () => {
         <Route
           path="/admin/product/create"
           element={<ProtectedRoute element={<CreateProduct />} adminOnly={true}/>}
+        />
+        <Route
+          path="/admin/product/update/:id"
+          element={<ProtectedRoute element={<UpdateProduct />} adminOnly={true}/>}
+        />
+        <Route
+          path="/admin/getUser"
+          element={<ProtectedRoute element={<UserList />} adminOnly={true}/>}
+        />
+        <Route
+          path="/admin/getUser/:id"
+          element={<ProtectedRoute element={<UpdateRole />} adminOnly={true}/>}
+        />
+        <Route
+          path="/admin/orders"
+          element={<ProtectedRoute element={<OrdersList />} adminOnly={true}/>}
+        />
+        <Route
+          path="/admin/order/:id"
+          element={<ProtectedRoute element={<UpdateOrder />} adminOnly={true}/>}
         />
       </Routes>
 
