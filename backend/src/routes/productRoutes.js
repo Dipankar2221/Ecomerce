@@ -20,7 +20,7 @@ router.get("/product/:id",getSingleProduct);
 router.route("/review").put(isAuthenticatedUser,createReviewForProduct)
 
 
-router.route("/reviews").get(isAuthenticatedUser,getProductsReview).delete(isAuthenticatedUser,roleBasedAccess("admin"),deleteReview);
+router.route("/admin/reviews").get(isAuthenticatedUser,roleBasedAccess("admin"),getProductsReview).delete(isAuthenticatedUser,roleBasedAccess("admin"),deleteReview);
 
 
 export default router;

@@ -23,7 +23,7 @@ const ImageSlider = () => {
   }, []);
 
   return (
-    <div className="relative w-full overflow-hidden bg-gray-900 py-10">
+    <div className="relative w-full overflow-hidden bg-gray-900 mt-8 py-10">
       {/* Slider Images */}
       <div
         className="flex transition-transform duration-700 ease-in-out"

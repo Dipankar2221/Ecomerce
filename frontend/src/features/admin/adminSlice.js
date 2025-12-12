@@ -189,6 +189,36 @@ export const updateOrderStatus = createAsyncThunk(
   }
 );
 
+// Fetch Reviews
+export const fetchProductReviews = createAsyncThunk(
+  "admin/fetchProductReviews",
+  async (id, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get(`/api/admin/reviews?id=${id}`);
+      return  data; 
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to product reviews"
+      );
+    }
+  }
+);
+
+
+// Delete Reviews
+export const deleteProductReviews = createAsyncThunk(
+  "admin/deleteProductReviews",
+  async ({productId,reviewId}, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.delete(`/api/admin/reviews?productId=${productId}&id=${reviewId}`);
+      return  data; 
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to delete reviews"
+      );
+    }
+  }
+);
 
 /* =============================
    MERGED ADMIN SLICE
@@ -209,7 +239,8 @@ const adminSlice = createSlice({
     message:null,
     orders:[],
     totalAmount:0,
-    order:{}
+    order:{},
+    reviews:[]
   },
 
   reducers: {
@@ -381,6 +412,33 @@ const adminSlice = createSlice({
         state.order=action.payload.order
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message;
+      })
+
+      .addCase(fetchProductReviews.pending, (state) => {
+        state.loading = true;
+        state.success = false;
+      })
+      .addCase(fetchProductReviews.fulfilled, (state, action) => {
+        state.loading = false;
+        state.reviews=action.payload.reviews
+      })
+      .addCase(fetchProductReviews.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message;
+      })
+
+      .addCase(deleteProductReviews.pending, (state) => {
+        state.loading = true;
+        state.success = false;
+      })
+      .addCase(deleteProductReviews.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success=action.payload.success
+        state.message=action.payload.message
+      })
+      .addCase(deleteProductReviews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message;
       })

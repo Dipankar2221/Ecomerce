@@ -8,7 +8,7 @@ import Login from "./user/Login";
 import { useDispatch, useSelector } from "react-redux";
 import { loadUser } from "./features/user/userSlice";
 import { loadCartForUser } from "./features/cart/cartSlice";
-import UserDashboard from "./user/UserDashboard";
+// import UserDashboard from "./user/UserDashboard";
 import Profile from "./user/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UpdateProfile from "./user/UpdateProfile";
@@ -30,6 +30,7 @@ import UserList from "./Admin/UserList";
 import UpdateRole from "./Admin/UpdateRole";
 import OrdersList from "./Admin/OrdersList";
 import UpdateOrder from "./Admin/UpdateOrder";
+import ReviewsList from "./Admin/ReviewsList";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -140,10 +141,15 @@ const App = () => {
           path="/admin/order/:id"
           element={<ProtectedRoute element={<UpdateOrder />} adminOnly={true}/>}
         />
+
+        <Route
+          path="/admin/reviews"
+          element={<ProtectedRoute element={<ReviewsList />} adminOnly={true}/>}
+        />
       </Routes>
 
       {/* Bottom Sidebar Profile */}
-      {isAuthenticated && <UserDashboard user={user} />}
+      {/* {isAuthenticated && <UserDashboard user={user} />} */}
     </Router>
   );
 };

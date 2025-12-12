@@ -50,7 +50,7 @@ const Cart = () => {
     }
   }, [error, dispatch]);
 
-  // Success message handler
+  // Success handler
   useEffect(() => {
     if (success && message) {
       toast.success(message, { autoClose: 1200 });
@@ -58,7 +58,7 @@ const Cart = () => {
     }
   }, [success, message, dispatch]);
 
-  // Format INR money
+  // Format INR currency
   const format = (num) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -88,15 +88,14 @@ const Cart = () => {
     });
   };
 
-const handleUpdate = (id, quantity) => {
-  if (!user?._id) {
-    toast.error("User not loaded yet!");
-    return;
-  }
+  const handleUpdate = (id, quantity) => {
+    if (!user?._id) {
+      toast.error("User not loaded yet!");
+      return;
+    }
 
-  dispatch(addItemsToCart({ id, quantity, userId: user._id }));
-};
-
+    dispatch(addItemsToCart({ id, quantity, userId: user._id }));
+  };
 
   const handleRemove = (id) => {
     dispatch(removeCartItem({ id, userId: user._id }));
@@ -111,14 +110,13 @@ const handleUpdate = (id, quantity) => {
   const tax = subtotal * 0.18;
   const total = subtotal + shipping + tax;
 
-  // Checkout redirect
   const checkoutHandler = () => {
     navigate("/shipping");
   };
 
   if (!user) return null;
 
-  // Empty cart UI
+  // Empty cart page
   if (cartItems.length === 0) {
     return (
       <>
@@ -156,7 +154,7 @@ const handleUpdate = (id, quantity) => {
                   key={item.product}
                   className="flex flex-col sm:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow hover:shadow-lg transition"
                 >
-                  {/* Product Info */}
+                  {/* Product section */}
                   <div className="flex items-center gap-4">
                     <img
                       src={item.image}
@@ -174,7 +172,7 @@ const handleUpdate = (id, quantity) => {
                     </div>
                   </div>
 
-                  {/* Quantity & Actions */}
+                  {/* Quantity buttons */}
                   <div className="flex items-center gap-2 mt-3 sm:mt-0">
                     <button
                       onClick={() => decreaseQuantity(item.product)}
