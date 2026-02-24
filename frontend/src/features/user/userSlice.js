@@ -124,7 +124,15 @@ export const resetPassword = createAsyncThunk(
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    user: localStorage.getItem('user')?JSON.parse(localStorage.getItem('user')):null,
+    user: (function() {
+      const _u = localStorage.getItem('user');
+      if (!_u || _u === 'undefined') return null;
+      try {
+        return JSON.parse(_u);
+      } catch (e) {
+        return null;
+      }
+    })(),
     loading: false,
     error: null,
     success: false,
