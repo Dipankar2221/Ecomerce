@@ -12,8 +12,17 @@ export const isAuthenticatedUser = async (req, res, next) => {
   }
 
   try {
-    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET || "yourSecretKey";
+    const decodedData = jwt.verify(token, secret);
     req.user = await User.findById(decodedData.id);
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token: user does not exist",
+      });
+    }
+
     next();
   } catch (error) {
     return res.status(401).json({
