@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js",
-    "postinstall": "cd ../frontend && npm ci && npm run build"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
