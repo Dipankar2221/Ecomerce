@@ -1,6 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+// ✅ AXIOS INSTANCE (VERY IMPORTANT)
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
+});
+
 /* -------------------------------------------------------------
    📌 GET ALL PRODUCTS
 ----------------------------------------------------------------*/
@@ -13,10 +19,12 @@ export const getProduct = createAsyncThunk(
       if (category) link += `&category=${encodeURIComponent(category)}`;
       if (keyword) link += `&keyword=${encodeURIComponent(keyword)}`;
 
-      const { data } = await axios.get(link);
+      const { data } = await API.get(link);
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch products");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch products"
+      );
     }
   }
 );
@@ -28,10 +36,12 @@ export const getProductDetails = createAsyncThunk(
   "product/getProductDetails",
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/product/${id}`);
+      const { data } = await API.get(`/api/product/${id}`);
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch product details");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch product details"
+      );
     }
   }
 );
@@ -43,21 +53,21 @@ export const createReview = createAsyncThunk(
   "product/createReview",
   async ({ rating, comment, productId }, { rejectWithValue }) => {
     try {
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
-      const { data } = await axios.put(
+      const { data } = await API.put(
         `/api/review`,
         { rating, comment, productId },
-        config
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to submit review");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to submit review"
+      );
     }
   }
 );
@@ -93,9 +103,7 @@ const productSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      /* -------------------------------------------------------------
-         📌 ALL PRODUCTS
-      ---------------------------------------------------------------*/
+      // ================= ALL PRODUCTS =================
       .addCase(getProduct.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -113,9 +121,7 @@ const productSlice = createSlice({
         state.products = [];
       })
 
-      /* -------------------------------------------------------------
-         📌 PRODUCT DETAILS
-      ---------------------------------------------------------------*/
+      // ================= PRODUCT DETAILS =================
       .addCase(getProductDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -129,16 +135,14 @@ const productSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* -------------------------------------------------------------
-         📌 CREATE REVIEW
-      ---------------------------------------------------------------*/
+      // ================= CREATE REVIEW =================
       .addCase(createReview.pending, (state) => {
         state.reviewLoading = true;
         state.error = null;
       })
-      .addCase(createReview.fulfilled, (state, action) => {
+      .addCase(createReview.fulfilled, (state) => {
         state.reviewLoading = false;
-        state.reviewSuccess = true; // ✔ Correct success flag
+        state.reviewSuccess = true;
       })
       .addCase(createReview.rejected, (state, action) => {
         state.reviewLoading = false;

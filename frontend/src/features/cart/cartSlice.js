@@ -1,14 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
-// ✅ Async Thunk: Fetch product details and add to cart
+// ✅ AXIOS INSTANCE
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
+});
+
+// ================= ADD TO CART =================
 export const addItemsToCart = createAsyncThunk(
   "cart/addItemsToCart",
   async ({ id, quantity, userId }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/product/${id}`);
-      const data = await response.json();
+      const { data } = await API.get(`/api/product/${id}`);
 
-      if (!data || !data.product) {
+      if (!data?.product) {
         throw new Error("Invalid product data");
       }
 
@@ -22,28 +28,38 @@ export const addItemsToCart = createAsyncThunk(
         userId,
       };
     } catch (error) {
-      return rejectWithValue(error.message || "Error adding product to cart");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Error adding to cart"
+      );
     }
   }
 );
 
-// ✅ Helper: Load cart items for a specific user
+// ================= HELPERS =================
 const getCartItems = (userId) => {
   if (!userId) return [];
-  const saved = localStorage.getItem(`cartItems_${userId}`);
-  return saved ? JSON.parse(saved) : [];
+  try {
+    const saved = localStorage.getItem(`cartItems_${userId}`);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
 };
 
-// ✅ Helper: Load shipping info (if exists)
 const getShippingInfo = () => {
-  const saved = localStorage.getItem("shippingInfo");
-  return saved ? JSON.parse(saved) : {};
+  try {
+    const saved = localStorage.getItem("shippingInfo");
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
 };
 
+// ================= SLICE =================
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
-    cartItems:[],
+    cartItems: [],
     loading: false,
     error: null,
     success: false,
@@ -52,7 +68,7 @@ const cartSlice = createSlice({
   },
 
   reducers: {
-    // ✅ Load user's cart (called when login)
+    // ✅ Load user cart
     loadCartForUser: (state, action) => {
       const userId = action.payload;
       state.cartItems = getCartItems(userId);
@@ -61,28 +77,37 @@ const cartSlice = createSlice({
     // ✅ Remove item
     removeCartItem: (state, action) => {
       const { id, userId } = action.payload;
-      state.cartItems = state.cartItems.filter((i) => i.product !== id);
+
+      state.cartItems = state.cartItems.filter(
+        (item) => item.product !== id
+      );
+
       localStorage.setItem(
         `cartItems_${userId}`,
         JSON.stringify(state.cartItems)
       );
-      state.message = "Item removed from cart!";
+
+      state.message = "Item removed from cart";
     },
 
     // ✅ Clear cart
     clearCart: (state, action) => {
       const userId = action.payload;
+
       state.cartItems = [];
       localStorage.removeItem(`cartItems_${userId}`);
-      localStorage.removeItem('shippingInfo')
+      localStorage.removeItem("shippingInfo");
     },
 
     // ✅ Update quantity
     updateQuantity: (state, action) => {
       const { id, quantity, userId } = action.payload;
+
       const item = state.cartItems.find((i) => i.product === id);
+
       if (item) {
         item.quantity = quantity;
+
         localStorage.setItem(
           `cartItems_${userId}`,
           JSON.stringify(state.cartItems)
@@ -93,10 +118,14 @@ const cartSlice = createSlice({
     // ✅ Save shipping info
     saveShippingInfo: (state, action) => {
       state.shippingInfo = action.payload;
-      localStorage.setItem("shippingInfo", JSON.stringify(action.payload));
+
+      localStorage.setItem(
+        "shippingInfo",
+        JSON.stringify(action.payload)
+      );
     },
 
-    // ✅ Reset error & message
+    // ✅ Reset states
     removeErrors: (state) => {
       state.error = null;
     },
@@ -116,12 +145,12 @@ const cartSlice = createSlice({
         const item = action.payload;
         state.loading = false;
 
-        const existing = state.cartItems.find(
+        const existingItem = state.cartItems.find(
           (i) => i.product === item.product
         );
 
-        if (existing) {
-          existing.quantity = item.quantity;
+        if (existingItem) {
+          existingItem.quantity = item.quantity;
         } else {
           state.cartItems.push(item);
         }
@@ -132,11 +161,11 @@ const cartSlice = createSlice({
         );
 
         state.success = true;
-        state.message = `${item.name} added to cart successfully!`;
+        state.message = `${item.name} added to cart`;
       })
       .addCase(addItemsToCart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Failed to add to cart";
+        state.error = action.payload;
       });
   },
 });
