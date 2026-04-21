@@ -38,7 +38,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
-     // 🔹 Validate password length
+    // 🔹 Validate password length
     if (password.length < 8) {
       return res.status(400).json({
         success: false,
@@ -134,8 +134,9 @@ export const loginUser = async (req, res) => {
     // 6️⃣ Store token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
+      secure: true,        // ✅ REQUIRED for HTTPS (Render)
+      sameSite: "none",    // ✅ ALLOW cross-origin
       expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      sameSite: "strict"
     });
 
     // 7️⃣ Remove password before sending response
@@ -185,7 +186,7 @@ export const updateProfile = async (req, res) => {
     }
 
     // ✅ Update user
-   const updateUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
+    const updateUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
       new: true,
       runValidators: true,
       useFindAndModify: false,
@@ -193,7 +194,7 @@ export const updateProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user:updateUser,
+      user: updateUser,
     });
   } catch (error) {
     console.error("Profile update error:", error);
@@ -263,8 +264,8 @@ export const forgotPassword = async (req, res) => {
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
-     // Create reset URL
-   const resetUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
 
 
     const message = `
@@ -430,27 +431,27 @@ export const updatePassword = async (req, res) => {
 
 //admin get All user information
 
-export const getUserList = async(req,res)=>{
+export const getUserList = async (req, res) => {
   const users = await User.find();
   res.status(200).json({
-    success:true,
+    success: true,
     users
   })
 }
 
-export const getSingleUser = async(req,res)=>{
+export const getSingleUser = async (req, res) => {
   const user = await User.findById(req.params.id);
 
-  if(!user){
+  if (!user) {
     return res.status(400).json({
-      success:false,
-      message:"user id doesn't exist"
+      success: false,
+      message: "user id doesn't exist"
     })
   }
 
   res.status(200).json({
-    success:true,
-    message:"user fetched succesfully",
+    success: true,
+    message: "user fetched succesfully",
     user
   })
 }
@@ -503,7 +504,7 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-       // 🗑 Delete avatar if exists
+    // 🗑 Delete avatar if exists
     if (user.avatar && user.avatar.public_id) {
       await imagekit.deleteFile(user.avatar.public_id);
     }
