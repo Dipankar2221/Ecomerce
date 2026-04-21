@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 
 const images = [
-  "./src/assets/banner.png",
-  "./src/assets/banner1.png",
-  "./src/assets/banner2.png",
-  "./src/assets/banner3.png",
-  "./src/assets/banner4.png",
+  "/banner.png",
+  "/banner1.png",
+  "/banner2.png",
+  "/banner3.png",
+  "/banner4.png",
 ];
 
 const ImageSlider = () => {
