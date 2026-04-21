@@ -11,7 +11,10 @@ const app = express();
 // ✅ CORS Middleware (MUST be before routes)
 app.use(
   cors({
-    origin: "https://ecomerce-olive-seven.vercel.app/", // frontend URL from Render
+    origin: [
+      "http://localhost:5173",
+      "https://ecomerce-olive-seven.vercel.app"
+    ],
     credentials: true,
   })
 );
