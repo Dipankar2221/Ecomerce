@@ -131,13 +131,14 @@ export const loginUser = async (req, res) => {
       { expiresIn: "5d" }
     );
 
-    // 6️⃣ Store token in HTTP-only cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,        // ✅ REQUIRED for HTTPS (Render)
-      sameSite: "none",    // ✅ ALLOW cross-origin
-      expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    });
+    const isProduction = process.env.NODE_ENV === "production";
+
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: isProduction,              // only true in production
+  sameSite: isProduction ? "none" : "lax",
+  expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+});
 
     // 7️⃣ Remove password before sending response
     user.password = undefined;
@@ -208,10 +209,12 @@ export const updateProfile = async (req, res) => {
 export const logoutUser = (req, res) => {
   try {
     // Clear the token cookie
-    res.cookie("token", "", {
-      httpOnly: true,
-      expires: new Date(0) // instantly expires
-    });
+   res.cookie("token", "", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  expires: new Date(0),
+});
 
     res.status(200).json({
       success: true,
