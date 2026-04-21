@@ -11,7 +11,7 @@ const app = express();
 // ✅ CORS Middleware (MUST be before routes)
 app.use(
   cors({
-    origin: "https://ecomerce-x0yf.onrender.com", // frontend URL from Render
+    origin: "https://ecomerce-olive-seven.vercel.app/", // frontend URL from Render
     credentials: true,
   })
 );
